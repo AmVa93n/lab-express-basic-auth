@@ -28,11 +28,14 @@ router.post("/signup", (req, res, next) => {
       });
     })
     .then(userFromDB => {
-      res.redirect('/userProfile');
+      res.redirect('/userProfile/' + userFromDB.username);
     })
     .catch(error => next(error));
 });
 
-router.get('/userProfile', (req, res) => res.render('users/user-profile'));
+router.get('/userProfile/:username', (req, res) => {
+  const username = req.params.username
+  res.render('users/user-profile', {username})
+});
 
 module.exports = router;
