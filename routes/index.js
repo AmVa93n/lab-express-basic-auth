@@ -3,18 +3,21 @@ const bcryptjs = require("bcryptjs")
 const saltRounds = 10
 const User = require('../models/User.model');
 
+// require auth middleware
+const { isLoggedIn, isLoggedOut } = require('../middleware/route-guard.js');
+
 /* GET home page */
 router.get("/", (req, res, next) => {
   res.render("index");
 });
 
 /* GET signup page */
-router.get("/signup", (req, res, next) => {
+router.get('/signup', isLoggedOut, (req, res, next) => {
   res.render("auth/signup");
 });
 
 /* POST signup page */
-router.post("/signup", (req, res, next) => {
+router.post('/signup', isLoggedOut, (req, res, next) => {
   const { username, email, password } = req.body;
  
   bcryptjs
@@ -33,15 +36,15 @@ router.post("/signup", (req, res, next) => {
     .catch(error => next(error));
 });
 
-router.get('/userProfile', (req, res) => {
+router.get('/userProfile', isLoggedIn, (req, res) => {
   res.render('users/user-profile', { userInSession: req.session.currentUser });
 });
 
 // GET route ==> to display the login form to users
-router.get('/login', (req, res) => res.render('auth/login'));
+router.get('/login', isLoggedOut, (req, res) => res.render('auth/login'));
 
 // POST login route ==> to process form data
-router.post('/login', (req, res, next) => {
+router.post('/login', isLoggedOut, (req, res, next) => {
   console.log('SESSION =====> ', req.session);
   const { email, password } = req.body;
  
@@ -73,11 +76,14 @@ router.post('/login', (req, res, next) => {
     .catch(error => next(error));
 });
 
-router.post('/logout', (req, res, next) => {
+router.post('/logout', isLoggedIn, (req, res, next) => {
   req.session.destroy(err => {
     if (err) next(err);
     res.redirect('/');
   });
 });
+
+router.get('/main', isLoggedIn, (req, res) => res.render('main'));
+router.get('/private', isLoggedIn, (req, res) => res.render('private'));
 
 module.exports = router;
